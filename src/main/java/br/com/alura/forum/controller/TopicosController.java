@@ -8,6 +8,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,7 +31,7 @@ public class TopicosController {
 
 	@Autowired
 	private TopicoRepository topicoRepository;
-	
+
 	@Autowired
 	private CursoRepository cursoRepository;
 
@@ -48,31 +49,39 @@ public class TopicosController {
 	}
 
 	@PostMapping
+	@Transactional
 	public ResponseEntity<TopicoDto> cadastrar(@RequestBody @Valid TopicoForm form, UriComponentsBuilder uriBuilder) {
-	    Topico topico = form.convert(cursoRepository);
+		Topico topico = form.convert(cursoRepository);
 		topicoRepository.save(topico);
-		
+
 		URI uri = uriBuilder.path("/topicos/{id}").buildAndExpand(topico.getId()).toUri();
 		return ResponseEntity.created(uri).body(new TopicoDto(topico));
 	}
-	
+
 	@GetMapping("/{id}")
-	public DetalhesTopicoDto detalhar(@PathVariable	Long id) {
-	
+	public DetalhesTopicoDto detalhar(@PathVariable Long id) {
+
 		Topico topico = topicoRepository.getOne(id);
 		return new DetalhesTopicoDto(topico);
 	}
-	
+
 	@PutMapping("/{id}")
 	@Transactional
-	public ResponseEntity<TopicoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizacaoTopicoForm form){
-		
-	  Topico topico = form.atualizar(id, topicoRepository);
-	  
-	  return ResponseEntity.ok(new TopicoDto(topico));
-		
-		
+	public ResponseEntity<TopicoDto> atualizar(@PathVariable Long id, @RequestBody @Valid AtualizacaoTopicoForm form) {
+
+		Topico topico = form.atualizar(id, topicoRepository);
+
+		return ResponseEntity.ok(new TopicoDto(topico));
+
 	}
 
+	@DeleteMapping("/{id}")
+	@Transactional
+	public ResponseEntity<?> remover(@PathVariable Long id) {
+
+		topicoRepository.deleteById(id);
+		return ResponseEntity.ok().build();
+
+	}
 
 }
